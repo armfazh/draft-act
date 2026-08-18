@@ -1,0 +1,45 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\title{Range Proofs Using Linear Constraints}
+\author{Armando Faz-Hernandez}
+\date{August 17, 2026}
+\begin{document}
+\maketitle
+Let $x\in \mathbb{Z}$ such that $x\geq 0$,  $x$ can be written in base-$B$, with $B\geq2$, using $n=\lfloor \log_B(x)\rfloor+1$ digits. So $(d_{n-1},\dots,d_{0})_B$ is the representation of $x$ in base-$B$ if it holds
+$$ x= \sum_{i=0}^{n-1} d_i B^i, \text{ where } d_i\in\{0,\dots, B-1\}\,.$$
+
+\paragraph{Valid Digit}
+We want to build linear constraints to check that $d\in\{0,\dots,k\}$ for $k>0$.
+Let $H_1,H_2$ be generators of a group $\mathbb{G}$.
+First, we commit to the digit value $C_0 = \text{Comm}(d\,;r)$, with $r$ be a random scalar. Using a Pedersen commitment, we have
+$$ C_0 = dH_1 + rH_2\,.$$
+Then, we define the following values:
+$$ C_{i} \coloneq (d-i)C_{i-1} - r_i H_2, \text{ where } r_i = r\prod_{j=1}^{i} (d-j), \text{ for } 1 \leq i \leq k\,.$$
+Every equation adds a factor $(d-i)$ that builds a polynomial whose roots are $i$ for all $i\in\{0,\dots,k\}$.
+
+We redistribute the equations, so the witness for $d$ is $w\coloneq(d,r,r_1,\dots,r_k)$, and the linear relations are:
+$$
+\begin{aligned}
+C_0      &= dH_1 + sH_2\\
+iC_{i-1} &= dC_{i-1} - r_i H_2, \text{ for } 1 \leq i \leq k\,.
+\end{aligned}
+$$
+
+\paragraph{Positive Integer in Range}
+We want to check that $x$ is in the range $0\leq x \leq N$ for some public $N$.
+To do so, we write $x$ in base-$B$, for some $B$, and obtain $(d_{n-1},\dots,d_0)$, where $n=\lfloor \log_B(N)\rfloor+1$.
+Then, to prove $x$ is in the range, we can apply the ValidDigit procedure to the digits distinguishing two cases.
+\begin{enumerate}
+ \item If $B^n-1=N$, apply ValidDigit to all digits setting $k=B-1$.
+ \item Otherwise, apply ValidDigit to the digits $d_{i}$, such that $i<n-1$, setting $k=B-1$; and for the digit $d_{n-1}$, apply ValidDigit with $k=\lfloor N/B^{n-1} \rfloor$.
+\end{enumerate}
+
+\paragraph{Negative Integers}
+We want to check that $x$ is in the range $-N \leq x \leq N$ for some public value $N$.
+Set $s=1$ if $x<0$, otherwise, set $s=0$.
+Apply the PositiveInteger procedure from above to $|x|$, and apply ValidDigit to $s$ setting $k=1$.
+
+\end{document}
